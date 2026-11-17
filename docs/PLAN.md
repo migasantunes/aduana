@@ -29,8 +29,9 @@ servers were also exercised over real sockets with curl.
 
 Known gaps left by M0, each assigned to a milestone below:
 
-- **The Docker image and compose file have never been built.** No Docker daemon was available
-  in the planning session. Build them first thing and fix what breaks (M6, but check now).
+- **The compose stack has never been run.** The image builds in CI (the `docker build` job is
+  green), but no container has been started and `compose up` is untested. Run it once and fix
+  what breaks (M6, but check now).
 - `tools/list` is not filtered per identity: a tool that policy would deny is still listed,
   and only the call is refused. `PolicyStage.is_tool_visible` exists; the `Pipeline` contract
   has no hook for it yet (M2).
