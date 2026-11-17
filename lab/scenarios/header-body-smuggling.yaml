@@ -1,0 +1,25 @@
+id: header-body-smuggling
+category: protocol_abuse
+server: benign_notes
+description: >
+  A client (or a man-in-the-middle intermediary) sends a tools/call whose Mcp-Name header names
+  a read-only tool while the JSON body calls a different tool, hoping a gateway that routes or
+  applies policy on the header will approve it while the server executes the body.
+attacker_goal: >
+  Desynchronise header-based policy from body-based execution so a forbidden call is routed as
+  an allowed one.
+steps:
+  - action: call_tool
+    tool: read_note
+    arguments:
+      id: todo
+    note: >
+      The transport layer is driven directly here: the harness sends Mcp-Name 'read_note' but a
+      body method/name that disagrees. The kit server rejects the mismatch.
+success_signal: >
+  A server or gateway that trusts the header over the body would execute the body call while
+  reporting the header's tool.
+expected_gateway_action: >
+  deny: mirrored-header validation (SPEC_NOTES §4) rejects any request whose Mcp-Method or
+  Mcp-Name header disagrees with the body with HTTP 400 and JSON-RPC -32020, at the transport
+  stage (category protocol_abuse).

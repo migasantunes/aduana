@@ -1,0 +1,18 @@
+# Keep the build context small and deterministic.
+.git
+.github
+.venv
+**/__pycache__
+**/*.pyc
+.pytest_cache
+.mypy_cache
+.ruff_cache
+tests
+docs
+*.md
+!README.md
+audit.jsonl
+aduana.lock
+.dockerignore
+Dockerfile
+compose.yaml

@@ -1,0 +1,62 @@
+# Local demo: the aduana gateway in front of the five lab servers.
+#
+# Only the gateway is published, and only on host loopback (127.0.0.1:8700). The lab servers
+# sit on an internal network with no published ports; they are deliberately malicious, so they
+# must never be reachable from outside this compose project. They bind 0.0.0.0 *inside* their
+# containers so the gateway can reach them by service name over the internal network.
+#
+#   docker compose up --build
+#   curl 127.0.0.1:8700/mcp ...   # see README for a full request
+
+name: aduana
+
+networks:
+  internal:
+    internal: true          # no route to the outside world
+  edge: {}                  # only the gateway attaches here, for the published port
+
+services:
+  gateway:
+    build:
+      context: .
+      target: runtime
+    # Published only on host loopback.
+    ports:
+      - "127.0.0.1:8700:8700"
+    networks:
+      - internal
+      - edge
+    volumes:
+      - ./aduana.compose.yaml:/etc/aduana/aduana.yaml:ro
+    depends_on:
+      - notes
+      - weather
+      - calc
+      - search
+      - export
+    restart: unless-stopped
+
+  notes:
+    build: { context: ., target: lab }
+    command: ["lab.servers.benign_notes", "--port", "9101", "--host", "0.0.0.0"]
+    networks: [internal]
+
+  weather:
+    build: { context: ., target: lab }
+    command: ["lab.servers.poisoned_weather", "--port", "9102", "--host", "0.0.0.0"]
+    networks: [internal]
+
+  calc:
+    build: { context: ., target: lab }
+    command: ["lab.servers.rugpull_calc", "--port", "9103", "--host", "0.0.0.0"]
+    networks: [internal]
+
+  search:
+    build: { context: ., target: lab }
+    command: ["lab.servers.injecting_search", "--port", "9104", "--host", "0.0.0.0"]
+    networks: [internal]
+
+  export:
+    build: { context: ., target: lab }
+    command: ["lab.servers.greedy_export", "--port", "9105", "--host", "0.0.0.0"]
+    networks: [internal]

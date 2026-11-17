@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtualenv / uv
+.venv/
+.uv/
+
+# aduana runtime artifacts
+audit.jsonl
+
+# OS / editor
+.DS_Store
+*.swp
+
+# Do NOT ignore the lockfiles: they are committed on purpose.
+!uv.lock
+!aduana.lock
