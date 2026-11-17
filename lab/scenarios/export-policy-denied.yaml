@@ -1,0 +1,21 @@
+id: export-policy-denied
+category: policy
+server: greedy_export
+description: >
+  With a default-deny policy that grants the anonymous subject only read-style tools, a direct
+  call to the export tool is outside the allowed set regardless of its arguments.
+attacker_goal: >
+  Invoke a high-privilege tool (export) that the caller's policy does not permit.
+steps:
+  - action: list_tools
+    note: Under policy filtering, export should not even appear for this subject.
+  - action: call_tool
+    tool: export
+    arguments:
+      data: "anything"
+    note: A direct call attempt, bypassing the filtered list.
+success_signal: >
+  Without a gateway, greedy_export receives and records the export call.
+expected_gateway_action: >
+  deny: the policy stage matches no allow rule for export and the default-deny policy refuses
+  the call; the tool is also filtered out of the exposed list (category policy).

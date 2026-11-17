@@ -1,0 +1,71 @@
+[project]
+name = "aduana"
+version = "0.0.1"
+description = "A security gateway for the Model Context Protocol (MCP)"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [{ name = "José Miguel Luís Antunes" }]
+dependencies = [
+    "starlette>=0.40",
+    "uvicorn>=0.30",
+    "httpx>=0.27",
+    "pydantic>=2.7",
+    "pyyaml>=6.0",
+    "typer>=0.12",
+    "jsonschema>=4.22",
+]
+
+[project.optional-dependencies]
+# M3: OAuth 2.1 resource server
+auth = ["pyjwt[crypto]>=2.8"]
+# M6: tracing
+otel = ["opentelemetry-api>=1.25", "opentelemetry-sdk>=1.25", "opentelemetry-exporter-otlp>=1.25"]
+# M1: interop tests against the official SDK
+interop = ["mcp>=2.3"]
+# M4: agent harness for the attack lab
+lab = ["anthropic>=0.40"]
+
+[project.scripts]
+aduana = "aduana.cli:app"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.2",
+    "pytest-asyncio>=0.23",
+    "ruff>=0.6",
+    "mypy>=1.10",
+    "types-PyYAML",
+    "types-jsonschema",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/aduana"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests", "lab"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "ASYNC", "S", "RUF"]
+ignore = ["S101"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S"]
+"lab/**" = ["S"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+files = ["src/aduana"]

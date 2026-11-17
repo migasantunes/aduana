@@ -1,0 +1,70 @@
+# aduana config for the compose demo (compose.yaml).
+#
+# Identical in spirit to aduana.example.yaml, but the upstream URLs use Docker service names
+# instead of 127.0.0.1, because each lab server runs in its own container on the internal
+# network. Validated strictly (extra="forbid"); load-check with:
+#   uv run python -c "from aduana.config import load_config; print(load_config('aduana.compose.yaml'))"
+
+gateway:
+  host: 0.0.0.0             # inside the container; published only on host 127.0.0.1 by compose
+  port: 8700
+  path: /mcp
+  allowed_origins:
+    - http://127.0.0.1:8700
+  max_body_bytes: 1048576
+  upstream_timeout_s: 30.0
+  max_list_ttl_ms: 60000
+
+upstreams:
+  - name: notes
+    url: http://notes:9101/mcp
+  - name: weather
+    url: http://weather:9102/mcp
+  - name: calc
+    url: http://calc:9103/mcp
+  - name: search
+    url: http://search:9104/mcp
+  - name: export
+    url: http://export:9105/mcp
+
+policy:
+  default: deny
+  rules:
+    - effect: allow
+      subjects: ["*"]
+      upstream: notes
+      tools: ["list_notes", "read_note"]
+    - effect: allow
+      subjects: ["*"]
+      upstream: notes
+      tools: ["add_note"]
+      arguments:
+        type: object
+        properties:
+          id: { type: string, maxLength: 64 }
+          text: { type: string, maxLength: 4096 }
+        required: ["id", "text"]
+        additionalProperties: false
+    - effect: allow
+      subjects: ["*"]
+      upstream: weather
+      tools: ["get_weather"]
+    - effect: allow
+      subjects: ["*"]
+      upstream: search
+      tools: ["search", "search_stream"]
+
+pinning:
+  mode: warn
+  lockfile: aduana.lock
+
+detectors:
+  rules:
+    enabled: true
+    deny_at: high
+  secrets:
+    enabled: true
+    deny_at: high
+
+audit:
+  path: audit.jsonl
